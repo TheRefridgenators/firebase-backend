@@ -371,7 +371,7 @@ function itemToPushMessage(
 
 function notificationDataToAlert(itemData, timestamp) {
   return {
-    summary: `You left your ${itemName} outside the fridge for 20 minutes!`,
+    summary: `You left your ${itemData.label} outside the fridge for 20 minutes!`,
     timestamp,
     itemData,
     purpose: "notify",
