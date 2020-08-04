@@ -6,10 +6,6 @@ const {
 const {
   Expo
 } = require("expo-server-sdk");
-const path = require("path");
-const {
-  ADDRGETNETWORKPARAMS
-} = require("dns");
 
 // import { DetectedItem, ItemLabel, TaskPayload } from "./types";
 
@@ -40,16 +36,16 @@ exports.onItemUpdate = functions.firestore
     if (!userPushTokens.length) return;
 
     const previousItems = change.before.data().items;
-    const previousItemData = previousItems.map((item) => ({
-      label: item.label,
-      filename: item.imagePath
-    }));
+    // const previousItemData = previousItems.map((item) => ({
+    //   label: item.label,
+    //   filename: item.imagePath
+    // }));
 
     const currentItems = change.after.data().items;
     const currentLabels = currentItems.map((item) => item.label);
 
     // Schedule notifications for missing (multi-use) items
-    await scheduleMissingItemNotifications(userPushTokens, context.params.userId, previousItemData, currentLabels);
+    await scheduleMissingItemNotifications(userPushTokens, context.params.userId, previousItems, currentLabels);
 
     // Ask user to identify any items with the label "null"
     await alertOnNullLabel(userPushTokens, context.params.userId, currentItems, currentLabels, previousItems);
@@ -87,11 +83,8 @@ exports.sendUserNotifications = functions.https.onRequest(
     }
 
     // Write alerts to Firestore
-    for (const {
-        itemLabel,
-        filename
-      } of items) {
-      const alertData = notificationDataToAlert(itemLabel, filename, new Date());
+    for (const item of items) {
+      const alertData = notificationDataToAlert(item.label, new Date());
 
       await admin
         .firestore()
@@ -239,7 +232,7 @@ async function scheduleMissingItemNotifications(pushTokens, userId, previousItem
   const sendTimeSeconds = Date.now() / 1000 + 30; /* 30 seconds from now; in practice should be 20 minutes */
 
   previousItemData.forEach((item) => {
-    if (!currentLabels.includes(item.label) && item.useClass === "multi") {
+    if (!currentLabels.includes(item.label) && item.usecase === "multi") {
       missingItems.push(item);
     }
   });
@@ -376,11 +369,11 @@ function itemToPushMessage(
   };
 }
 
-function notificationDataToAlert(itemName, filename, timestamp) {
+function notificationDataToAlert(itemData, timestamp) {
   return {
     summary: `You left your ${itemName} outside the fridge for 20 minutes!`,
-    filename,
     timestamp,
+    itemData,
     purpose: "notify",
   }
 }
