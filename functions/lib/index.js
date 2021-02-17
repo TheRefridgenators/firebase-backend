@@ -7,16 +7,6 @@ const {
   Expo
 } = require("expo-server-sdk");
 
-// import { DetectedItem, ItemLabel, TaskPayload } from "./types";
-
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
 admin.initializeApp();
 const expoInstance = new Expo();
 const tasksClient = new CloudTasksClient();
@@ -36,10 +26,6 @@ exports.onItemUpdate = functions.firestore
     if (!userPushTokens.length) return;
 
     const previousItems = change.before.data().items;
-    // const previousItemData = previousItems.map((item) => ({
-    //   label: item.label,
-    //   filename: item.imagePath
-    // }));
 
     const currentItems = change.after.data().items;
     const currentLabels = currentItems.map((item) => item.label);
